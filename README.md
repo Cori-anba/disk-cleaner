@@ -35,7 +35,7 @@ Your C drive fills up with temp files, browser caches, Windows Update leftovers,
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/disk-cleaner-mcp.git
+git clone https://github.com/Cori-anba/disk-cleaner.git
 cd disk-cleaner-mcp
 
 # Install dependencies
@@ -47,27 +47,14 @@ npm run build
 
 ### MCP Configuration
 
-Add to your Claude Code `settings.json` (`~/.claude/settings.json`):
+Add to `~/.claude/.mcp.json`:
 
-**Development (local clone):**
 ```json
 {
   "mcpServers": {
     "disk-cleaner": {
       "command": "npx",
-      "args": ["tsx", "C:\\Users\\YOUR_NAME\\path\\to\\disk-cleaner-mcp\\src\\index.ts"]
-    }
-  }
-}
-```
-
-**After npm publish:**
-```json
-{
-  "mcpServers": {
-    "disk-cleaner": {
-      "command": "npx",
-      "args": ["disk-cleaner-mcp"]
+      "args": ["tsx", "C:\\Users\\YOUR_NAME\\.claude\\skills\\disk-cleaner-mcp\\src\\index.ts"]
     }
   }
 }
