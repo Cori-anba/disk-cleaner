@@ -2,6 +2,11 @@
 
 > 一句话清理磁盘，安全到可以闭着眼睛用。
 
+> ⚠️ **请务必以管理员模式打开 PowerShell / 终端来运行你的 Agent，再调用本 skill！**
+> 否则 Windows Update 缓存、Delivery Optimization、Prefetch 等系统级垃圾将无法访问，清理效果会大打折扣（通常少清理 10-30 GB）。
+
+![运行结果示例](https://raw.githubusercontent.com/Cori-anba/disk-cleaner/main/运行结果示例.jpg)
+
 你的 C 盘又红了？说一句「帮我清理 C 盘」，剩下的全自动搞定——**临时文件、浏览器缓存、Windows Update 残留、回收站**等 8 类垃圾一次性扫干净，通常能腾出 **15~40 GB** 空间。中间不需要你盯着，只有到最后遇到拿不准的文件时才会问你一声。
 
 安全方面，System32、个人文档、桌面照片、程序目录、`.exe` `.dll` 等系统文件**硬编码在代码里永远不碰**——不是靠 AI 自觉，是代码层面直接拦截，AI 没权限绕过。
