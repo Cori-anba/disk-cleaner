@@ -15,6 +15,24 @@ import { BROWSER_CACHE_DIRS, BROWSER_NAMES } from '../constants.js';
 // Internal helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Check if a file is locked by another process.
+ * Tries to open the file with write access — if it fails, the file is locked.
+ * Returns false for directories and already-deleted files.
+ */
+async function isFileLocked(filePath: string): Promise<boolean> {
+  try {
+    const stat = await fs.stat(filePath);
+    if (stat.isDirectory()) return false; // directories handled differently
+    // Try opening the file for write access briefly
+    const handle = await fs.open(filePath, 'r+');
+    await handle.close();
+    return false;
+  } catch {
+    return true; // can't open = locked or missing
+  }
+}
+
 function runPowerShell(script: string, timeoutMs = 30_000): string {
   const encoded = Buffer.from(script, 'utf16le').toString('base64');
   // Use -NoProfile -NonInteractive -EncodedCommand for safe argument passing
@@ -159,6 +177,11 @@ export const windowsPlatform: PlatformImpl = {
   // ---- Deletion ----------------------------------------------------------
 
   async moveToRecycleBin(targetPath: string): Promise<void> {
+    // Silently skip if file is locked — no dialogs, no user prompts
+    if (await isFileLocked(targetPath)) {
+      throw new Error('FILE_LOCKED');
+    }
+
     const psScript = `
 $ErrorActionPreference = 'Stop'
 $path = '${targetPath.replace(/'/g, "''")}'
@@ -172,19 +195,21 @@ if ($file) {
     throw "Cannot parse item: $path"
 }
 `;
-    await runPowerShellAsync(psScript);
+    // 10-second timeout per file — if COM hangs, we skip
+    await runPowerShellAsync(psScript, 10_000);
   },
 
   async permanentDelete(targetPath: string): Promise<void> {
-    try {
-      const info = await fs.stat(targetPath);
-      if (info.isDirectory()) {
-        await fs.rm(targetPath, { recursive: true, force: true });
-      } else {
-        await fs.unlink(targetPath);
-      }
-    } catch {
-      // File may already be gone or inaccessible — absorb
+    // Silently skip if file is locked
+    if (await isFileLocked(targetPath)) {
+      throw new Error('FILE_LOCKED');
+    }
+
+    const info = await fs.stat(targetPath);
+    if (info.isDirectory()) {
+      await fs.rm(targetPath, { recursive: true, force: true });
+    } else {
+      await fs.unlink(targetPath);
     }
   },
 
